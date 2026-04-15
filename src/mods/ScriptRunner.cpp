@@ -1029,6 +1029,15 @@ void ScriptRunner::on_frame() {
         spdlog::info("[ScriptRunner] Lua state initialized.");
     }
 
+    if (m_reset_requested.exchange(false)) {
+        if (m_last_online_match_state) {
+            spdlog::warn("[ScriptRunner] External reset requested during online match; ignoring.");
+        } else {
+            spdlog::info("[ScriptRunner] External reset requested; resetting scripts.");
+            reset_scripts();
+        }
+    }
+
     for (auto state_to_delete : m_states_to_delete) {
         std::erase_if(m_states, [&](std::shared_ptr<ScriptState> state) { return state->lua().lua_state() == state_to_delete; });
     }

@@ -34,6 +34,7 @@ extern "C" {
 #include "mods/FaultyFileDetector.hpp"
 #include "mods/LooseFileLoader.hpp"
 #include "mods/PluginLoader.hpp"
+#include "mods/ScriptRunner.hpp"
 #include "mods/VR.hpp"
 #include "sdk/REGlobals.hpp"
 #include "sdk/Application.hpp"
@@ -54,6 +55,8 @@ DEFINE_GUID(GUID_DEVINTERFACE_HID, 0x4D1E55B2L, 0xF16F, 0x11CF, 0x88, 0xCB, 0x00
 DEFINE_GUID(XUSB_INTERFACE_CLASS_GUID, 0xEC87F1E3, 0xC13B, 0x4100, 0xB5, 0xF7, 0x8B, 0x84, 0xD5, 0x42, 0x60, 0xCB);
 
 std::unique_ptr<REFramework> g_framework{};
+static constexpr wchar_t REFRAMEWORK_RESET_SCRIPTS_MSG_NAME[] = L"REFramework_ResetScripts_v1";
+static UINT g_reset_scripts_message = 0;
 
 void REFramework::hook_monitor() {
     if (m_do_not_hook_d3d_count.load() > 0) {
@@ -273,6 +276,11 @@ REFramework::REFramework(HMODULE reframework_module)
     spdlog::info("Build date: {}", REF_BUILD_DATE);
     spdlog::info("Build time: {}", REF_BUILD_TIME);
     spdlog::info("Game name: {}", REFramework::get_game_name());
+
+    if (g_reset_scripts_message == 0) {
+        g_reset_scripts_message = RegisterWindowMessageW(REFRAMEWORK_RESET_SCRIPTS_MSG_NAME);
+        spdlog::info("Registered reset scripts message id: {}", g_reset_scripts_message);
+    }
 
     const auto module_size = *utility::get_module_size(m_game_module);
 
@@ -1219,6 +1227,12 @@ bool REFramework::on_message(HWND wnd, UINT message, WPARAM w_param, LPARAM l_pa
 
     if (!m_initialized) {
         return true;
+    }
+
+    if (g_reset_scripts_message != 0 && message == g_reset_scripts_message) {
+        spdlog::info("Received external reset scripts message");
+        ScriptRunner::get()->request_reset_scripts();
+        return false;
     }
 
     bool is_mouse_moving{false};

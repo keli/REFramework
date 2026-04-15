@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <atomic>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -394,6 +395,10 @@ public:
         m_has_any_transform_updates = true;
     }
 
+    void request_reset_scripts() {
+        m_reset_requested.store(true);
+    }
+
 private:
     ScriptState::GarbageCollectionData make_gc_data() const {
         ScriptState::GarbageCollectionData data{};
@@ -428,6 +433,7 @@ private:
     bool m_has_any_transform_updates{false};
     bool m_console_spawned{false};
     bool m_needs_first_reset{true};
+    std::atomic<bool> m_reset_requested{false};
     bool m_last_online_match_state{false};
     bool m_attempted_hook_battle_rule{false};
     std::optional<uint8_t> m_last_battle_type{};
