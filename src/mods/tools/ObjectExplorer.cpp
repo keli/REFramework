@@ -5415,7 +5415,7 @@ HookManager::PreHookResult ObjectExplorer::pre_hooked_method_internal(std::vecto
     const auto now = std::chrono::high_resolution_clock::now();
     hooked_method.stats.last_call_time = now;
     hooked_method.stats.last_call_times[tid] = now;
-    hooked_method.stats.thread_ids.insert(tid._Get_underlying_id());
+    hooked_method.stats.thread_ids.insert(GetCurrentThreadId());
 
     auto result = HookManager::PreHookResult::CALL_ORIGINAL;
 

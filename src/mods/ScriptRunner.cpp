@@ -62,7 +62,7 @@ size_t get_hash() {
 }
 
 uint32_t get_id() {
-    return std::this_thread::get_id()._Get_underlying_id();
+    return GetCurrentThreadId();
 }
 
 sol::object get_hook_storage(sol::this_state s) {
